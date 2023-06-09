@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ProjectGMAPS</string>
+
+    <string name="my_map_api_key">AIzaSyC0JQUisYAJH7cCGIBT05wBn7RlSKTqzyQ</string>
+</resources>
