@@ -11,6 +11,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -45,7 +46,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Address address = addressList.get(0);
                     LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                     myMap.addMarker(new MarkerOptions().position(latLng).title(location));
-                    myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+                    myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
                 }
                 return false;
             }
@@ -132,11 +133,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         myMap = googleMap;
+        myMap.setOnMapClickListener(this);
+
+        myMap.getUiSettings().setZoomControlsEnabled(true);
+        myMap.getUiSettings().setCompassEnabled(true);
 
         // Add a marker for your current location
         LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         myMap.addMarker(new MarkerOptions().position(currentLatLng).title("My Location"));
         myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15));
+
+        // Enable My Location Button and Compass
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        myMap.setMyLocationEnabled(true);
+        myMap.getUiSettings().setMyLocationButtonEnabled(true);
+        myMap.getUiSettings().setCompassEnabled(true);
 
         // Add nearby places
         PlacesClient placesClient = Places.createClient(this);
@@ -148,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                 .setLocationRestriction(RectangularBounds.newInstance(bounds))
                 .setOrigin(currentLatLng)
-                .setCountries("YOUR_COUNTRY_CODE") // Replace with the desired country code, e.g., "US" for the United States
+                .setCountries("ID")
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .setSessionToken(token)
                 .build();
@@ -169,6 +182,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     }
                 });
+
+        Geocoder geocoder = new Geocoder(MainActivity.this);
+        List<Address> addresses;
+        try {
+            addresses = geocoder.getFromLocation(currentLocation.getLatitude(), currentLocation.getLongitude(), 1);
+            if (!addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                String streetAddress = address.getAddressLine(0);
+                double latitude = currentLocation.getLatitude();
+                double longitude = currentLocation.getLongitude();
+
+                Toast.makeText(MainActivity.this, "Latitude: " + latitude + "\nLongitude: " + longitude + "\nStreet Address: " + streetAddress, Toast.LENGTH_LONG).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -183,4 +213,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        Geocoder geocoder = new Geocoder(MainActivity.this);
+        List<Address> addresses;
+        try {
+            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+            if (!addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                String streetAddress = address.getAddressLine(0); // Get the street address
+                double latitude = latLng.latitude;
+                double longitude = latLng.longitude;
+
+                // Display the information (you can use any UI element to display the information)
+                Toast.makeText(MainActivity.this, "Latitude: " + latitude + "\nLongitude: " + longitude + "\nStreet Address: " + streetAddress, Toast.LENGTH_LONG).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
