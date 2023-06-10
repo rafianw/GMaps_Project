@@ -10,6 +10,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -20,11 +21,25 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -45,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
+        Places.initialize(getApplicationContext(), "AIzaSyC0JQUisYAJH7cCGIBT05wBn7RlSKTqzyQ");
+
         mapSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -52,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String location = mapSearchView.getQuery().toString();
                 List<Address> addressList = null;
 
-                if (location !=null){
+                if (location != null) {
                     Geocoder geocoder = new Geocoder(MainActivity.this);
 
                     try {
@@ -87,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                if (location != null){
+                if (location != null) {
                     currentLocation = location;
 
                     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -99,14 +116,48 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-
         myMap = googleMap;
 
-        LatLng sydney = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        myMap.addMarker(new MarkerOptions().position(sydney).title("My Location"));
-        myMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // Add a marker for your current location
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        myMap.addMarker(new MarkerOptions().position(currentLatLng).title("My Location"));
+        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 10));
 
+        // Add nearby places
+        PlacesClient placesClient = Places.createClient(this);
+        List<Place.Field> placeFields = Arrays.asList(Place.Field.NAME, Place.Field.LAT_LNG);
+
+        // Perform a nearby search using the Places API
+        LatLngBounds bounds = LatLngBounds.builder().include(currentLatLng).build();
+        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setLocationRestriction(RectangularBounds.newInstance(bounds))
+                .setOrigin(currentLatLng)
+                .setCountries("YOUR_COUNTRY_CODE") // Replace with the desired country code, e.g., "US" for the United States
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .setSessionToken(token)
+                .build();
+
+        placesClient.findAutocompletePredictions(request)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FindAutocompletePredictionsResponse response = task.getResult();
+                        List<AutocompletePrediction> predictions = response.getAutocompletePredictions();
+                        for (AutocompletePrediction prediction : predictions) {
+                            Log.i("TAG", "Place: " + prediction.getFullText(null));
+                            Log.i("TAG", "Place ID: " + prediction.getPlaceId());
+                        }
+                    } else {
+                        Exception exception = task.getException();
+                        if (exception != null) {
+                            Log.e("TAG", "Place not found: " + exception.getMessage());
+                        }
+                    }
+                });
     }
+
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
