@@ -11,6 +11,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -92,6 +95,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        ImageButton myLocationButton = findViewById(R.id.myLocationButton);
+        myLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (currentLocation != null && myMap != null) {
+                    LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                    myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15));
+                }
+            }
+        });
+
     }
 
     private void getLastLocation() {
@@ -121,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Add a marker for your current location
         LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         myMap.addMarker(new MarkerOptions().position(currentLatLng).title("My Location"));
-        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 10));
+        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15));
 
         // Add nearby places
         PlacesClient placesClient = Places.createClient(this);
@@ -155,8 +170,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
     }
-
-
 
 
     @Override
