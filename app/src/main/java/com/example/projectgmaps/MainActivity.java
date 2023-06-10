@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -51,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
     private SearchView mapSearchView;
+
+    private int currentMapType = GoogleMap.MAP_TYPE_NORMAL;
+
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -107,6 +111,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
+
+        Button changeMapTypeButton = findViewById(R.id.changeMapTypeButton);
+        changeMapTypeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (currentMapType) {
+                    case GoogleMap.MAP_TYPE_NORMAL:
+                        myMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                        currentMapType = GoogleMap.MAP_TYPE_SATELLITE;
+                        break;
+                    case GoogleMap.MAP_TYPE_SATELLITE:
+                        myMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                        currentMapType = GoogleMap.MAP_TYPE_HYBRID;
+                        break;
+                    case GoogleMap.MAP_TYPE_HYBRID:
+                        myMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                        currentMapType = GoogleMap.MAP_TYPE_TERRAIN;
+                        break;
+                    case GoogleMap.MAP_TYPE_TERRAIN:
+                        myMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                        currentMapType = GoogleMap.MAP_TYPE_NORMAL;
+                        break;
+                }
+            }
+        });
+
 
     }
 

@@ -14,16 +14,29 @@
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
 
+
     <ImageButton
         android:id="@+id/myLocationButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="68dp"
         android:background="@drawable/bg_search_view"
         android:scaleType="fitCenter"
         android:src="@drawable/img_123"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/changeMapTypeButton"
+        android:layout_width="147dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_search_view"
+        android:text="Change Map"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -32,12 +45,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:queryHint="Search..."
-        android:iconifiedByDefault="false"
-        android:elevation="5dp"
+        android:layout_marginTop="76dp"
         android:background="@drawable/bg_search_view"
+        android:elevation="5dp"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search..."
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
